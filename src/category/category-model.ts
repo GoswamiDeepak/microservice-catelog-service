@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export interface PriceConfiguaration {
     [key: string]: {
-        priceType: "base" | "additional";
+        priceType: "base" | "aditional";
         availableOptions: string[];
     };
 }
