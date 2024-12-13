@@ -1,5 +1,5 @@
 {
-    "name": "template-service",
+    "name": "catelog-service",
     "version": "1.0.0",
     "description": "A user management service",
     "main": "index.js",
@@ -15,7 +15,7 @@
         "start": "ts-node src/index.ts",
         "test": "jest --runInBand"
     },
-    "author": "Rakesh K <codersgyan@gmail.com>",
+    "author": "deepak Goswami<deepakgoswamiofficial@gmail.com>",
     "license": "ISC",
     "devDependencies": {
         "@types/config": "^3.3.5",
@@ -54,6 +54,7 @@
         "express-validator": "^7.0.1",
         "http-errors": "^2.0.0",
         "js-yaml": "^4.1.0",
+        "mongoose": "^8.8.4",
         "uuid": "^9.0.1",
         "winston": "^3.10.0"
     }
