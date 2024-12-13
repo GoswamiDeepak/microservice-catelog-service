@@ -1,3 +1,4 @@
+// import config from "config";
 import express, { Request, Response } from "express";
 import { globalErrorHandler } from "./common/middlewares/globalErrorHandler";
 
