@@ -201,4 +201,12 @@ export class ProductController {
             currentPage: products.page,
         });
     };
+    show = async (req: Request, res: Response, next: NextFunction) => {
+        const productId = req.params.productId;
+        const product = await this.productService.getProduct(productId);
+        if (!product) {
+            return next(createHttpError(404, "Product not found"));
+        }
+        res.json(product);
+    };
 }
