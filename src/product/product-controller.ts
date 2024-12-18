@@ -168,8 +168,37 @@ export class ProductController {
         const products = await this.productService.getProducts(
             q as string,
             filters,
+            {
+                page: req.query.page ? parseInt(req.query.page as string) : 1,
+                limit: req.query.limit
+                    ? parseInt(req.query.limit as string)
+                    : 10,
+            },
         );
 
-        res.json(products);
+        if (!products.data) {
+            return res.json({
+                data: [],
+                total: 0,
+                pageSize: 10,
+                currentPage: 1,
+            });
+        }
+
+        const finalProduct = (products?.data as Product[]).map(
+            (product: Product) => {
+                return {
+                    ...product,
+                    image: this.storage.getObject(product.image),
+                };
+            },
+        );
+
+        res.json({
+            data: finalProduct,
+            total: products.total,
+            pageSize: products.limit,
+            currentPage: products.page,
+        });
     };
 }

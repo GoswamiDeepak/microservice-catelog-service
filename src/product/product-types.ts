@@ -15,6 +15,7 @@ export interface Attribute {
     value: boolean | string;
 }
 export interface Product {
+    _id?: mongoose.Types.ObjectId;
     name: string;
     description: string;
     priceConfiguration: string;
@@ -32,4 +33,9 @@ export interface Filter {
     tenantId?: string;
     categoryId?: mongoose.Types.ObjectId;
     isPublish?: boolean;
+}
+
+export interface PaginationQuery {
+    page: number;
+    limit: number;
 }
