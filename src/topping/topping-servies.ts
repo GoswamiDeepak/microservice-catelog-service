@@ -5,4 +5,18 @@ export class ToppingService {
     async create(topping: Topping) {
         return await ToppingModel.create(topping);
     }
+
+    async getTopping(toppingId: string) {
+        return await ToppingModel.findOne({ _id: toppingId });
+    }
+
+    async updateTopping(toppingId: string, topping: Topping) {
+        return await ToppingModel.findByIdAndUpdate(
+            toppingId,
+            {
+                $set: topping,
+            },
+            { new: true },
+        );
+    }
 }

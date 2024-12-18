@@ -7,6 +7,8 @@ import { ToppingService } from "./topping-servies";
 import { FileStorage } from "../common/types/storage";
 import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
+import { AuthRequest } from "../common/types";
+import { Roles } from "../common/constants";
 
 export class ToppingController {
     constructor(
@@ -50,5 +52,68 @@ export class ToppingController {
         this.logger.info("Topping is created!", { id: newTopping._id });
 
         res.json({ id: newTopping._id });
+    };
+
+    update = async (
+        req: ToppingCreateRequest,
+        res: Response,
+        next: NextFunction,
+    ) => {
+        const result = validationResult(req);
+        if (!result.isEmpty()) {
+            return next(createHttpError(400, result.array()[0].msg as string));
+        }
+        const { toppingId } = req.params;
+        //check if tenant has access to the topping ------------------
+        const topping = await this.toppingService.getTopping(toppingId);
+
+        if (!topping) {
+            return next(createHttpError(404, "Topping is not Found."));
+        }
+
+        const isTenantId = (req as AuthRequest).auth.tenant;
+
+        if ((req as AuthRequest).auth.role !== Roles.ADMIN) {
+            if (topping.tenantId !== String(isTenantId)) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to access this Topping",
+                    ),
+                );
+            }
+        }
+
+        //upload image to S3 ------------------
+        let imageName: string | undefined;
+        let oldImage: string | undefined;
+
+        if (req.files?.image) {
+            //check if image exist
+            oldImage = topping.image;
+            const originalImage = req.files?.image as UploadedFile;
+            imageName = uuidv4();
+            //upload new image
+            await this.storage.upload({
+                fileName: imageName,
+                fileData: originalImage.data.buffer,
+            });
+            //delete image
+            await this.storage.delete(oldImage);
+        }
+
+        const { name, price, tenantId, isPublish } = req.body;
+
+        const toppingData = {
+            name,
+            price,
+            tenantId,
+            isPublish,
+            image: imageName ? imageName : (oldImage as string),
+            // image: imageName
+        };
+
+        await this.toppingService.updateTopping(toppingId, toppingData);
+        this.logger.info("Topping is updated", { id: toppingId });
     };
 }
