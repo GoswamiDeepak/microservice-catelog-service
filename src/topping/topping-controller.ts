@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
-import { ToppingCreateRequest } from "./topping-types";
+import { Topping, ToppingCreateRequest } from "./topping-types";
 import { Logger } from "winston";
 import { ToppingService } from "./topping-servies";
 import { FileStorage } from "../common/types/storage";
@@ -119,8 +119,14 @@ export class ToppingController {
 
     getAll = async (req: Request, res: Response) => {
         const topping = await this.toppingService.getAll();
+        const finalTopping = (topping as Topping[]).map((topping: Topping) => {
+            return {
+                ...topping,
+                image: this.storage.getObject(topping.image),
+            };
+        });
         res.json({
-            data: topping,
+            data: finalTopping,
         });
     };
 

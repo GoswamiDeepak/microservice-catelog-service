@@ -21,7 +21,7 @@ export class ToppingService {
     }
 
     async getAll() {
-        return await ToppingModel.find();
+        return await ToppingModel.find({}).select("-__v").lean();
     }
 
     async deleteTopping(toppingId: string) {
