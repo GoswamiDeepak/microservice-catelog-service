@@ -209,4 +209,10 @@ export class ProductController {
         }
         res.json(product);
     };
+
+    destroy = async (req: Request, res: Response) => {
+        const productId = req.params.productId;
+        await this.productService.deleteProduct(productId);
+        res.json({ message: "Product deleted successfully" });
+    };
 }
