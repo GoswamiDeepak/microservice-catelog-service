@@ -16,7 +16,7 @@ export class ProductService {
     }
 
     async getProduct(productId: string): Promise<Product | null> {
-        return await ProductModel.findOne({ _id: productId });
+        return await ProductModel.findOne({ _id: productId }).lean();
     }
 
     async getProducts(

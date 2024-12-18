@@ -125,6 +125,7 @@ export class ToppingController {
                 image: this.storage.getObject(topping.image),
             };
         });
+        this.logger.info("All Topping are fetched");
         res.json({
             data: finalTopping,
         });
@@ -140,6 +141,7 @@ export class ToppingController {
             ...topping.toObject(),
             image: this.storage.getObject(topping.image),
         };
+        this.logger.info("single Product is fetched", { id: toppingId });
         res.json(finalTopping);
     };
 
@@ -151,6 +153,7 @@ export class ToppingController {
         }
         await this.storage.delete(toppingData.image);
         await this.toppingService.deleteTopping(toppingId);
+        this.logger.info("Product is deleted", { id: toppingId });
         res.json({ message: "Topping deleted successfully" });
     };
 }

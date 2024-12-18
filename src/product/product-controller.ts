@@ -193,7 +193,7 @@ export class ProductController {
                 };
             },
         );
-
+        this.logger.info("All Products are fetched");
         res.json({
             data: finalProduct,
             total: products.total,
@@ -207,12 +207,20 @@ export class ProductController {
         if (!product) {
             return next(createHttpError(404, "Product not found"));
         }
-        res.json(product);
+        const finalProduct = {
+            ...product,
+            image: this.storage.getObject(product.image),
+        } as Product;
+        this.logger.info("single Product is fetched", { id: productId });
+        res.json(finalProduct);
     };
 
     destroy = async (req: Request, res: Response) => {
         const productId = req.params.productId;
+        const product = await this.productService.getProduct(productId);
+        await this.storage.delete(product!.image);
         await this.productService.deleteProduct(productId);
+        this.logger.info("Product is deleted", { id: productId });
         res.json({ message: "Product deleted successfully" });
     };
 }
