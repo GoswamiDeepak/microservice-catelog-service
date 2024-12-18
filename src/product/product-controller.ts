@@ -13,6 +13,8 @@ import {
 import { FileStorage } from "../common/types/storage";
 import { v4 as uuidv4 } from "uuid";
 import { UploadedFile } from "express-fileupload";
+import { AuthRequest } from "../common/types";
+import { Roles } from "../common/constants";
 
 export class ProductController {
     constructor(
@@ -78,11 +80,31 @@ export class ProductController {
         }
         const { productId } = req.params;
 
+        //check if tenant has access to the product
+        const productFromDB = await this.productService.getProduct(productId);
+
+        if (!productFromDB) {
+            return next(createHttpError(404, "Product not Found"));
+        }
+
+        const isTenantId = (req as AuthRequest).auth.tenant;
+
+        if ((req as AuthRequest).auth.role !== Roles.ADMIN) {
+            if (productFromDB.tenantId !== String(isTenantId)) {
+                return next(
+                    createHttpError(
+                        403,
+                        "You are not allowed to access this product",
+                    ),
+                );
+            }
+        }
+
         let imageName: string | undefined;
         let oldImage: string | undefined;
 
         if (req.files?.image) {
-            oldImage = await this.productService.getProductImage(productId);
+            oldImage = productFromDB.image;
 
             const image = req.files?.image as UploadedFile;
 
@@ -93,7 +115,7 @@ export class ProductController {
                 fileData: image.data.buffer,
             });
 
-            await this.storage.delete(oldImage!);
+            await this.storage.delete(oldImage);
         }
         const {
             name,

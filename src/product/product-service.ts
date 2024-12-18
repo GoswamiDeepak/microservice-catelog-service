@@ -6,16 +6,15 @@ export class ProductService {
         return await ProductModel.create(product);
     }
 
-    async getProductImage(productId: string) {
-        const product = await ProductModel.findById(productId);
-        return product?.image;
-    }
-
     async updateProduct(productId: string, product: Product) {
         return await ProductModel.findOneAndUpdate(
             { _id: productId },
             { $set: product },
             { new: true },
         );
+    }
+
+    async getProduct(productId: string): Promise<Product | null> {
+        return await ProductModel.findOne({ _id: productId });
     }
 }
