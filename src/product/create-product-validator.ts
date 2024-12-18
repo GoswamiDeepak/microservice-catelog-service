@@ -9,11 +9,10 @@ export default [
 
     body("description").exists().withMessage("Description is required"),
 
-    // body("image")
-    // .custom((value, { req }) => {
-    //     if(!req.files) throw new Error("Product Image is required.");
-    //     return true;
-    // }),
+    body("image").custom((value, { req }) => {
+        if (!req.files) throw new Error("Product Image is required.");
+        return true;
+    }),
 
     body("priceConfiguration")
         .exists()
