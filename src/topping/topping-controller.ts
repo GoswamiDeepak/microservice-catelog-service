@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 import { ToppingCreateRequest } from "./topping-types";
@@ -115,5 +115,27 @@ export class ToppingController {
 
         await this.toppingService.updateTopping(toppingId, toppingData);
         this.logger.info("Topping is updated", { id: toppingId });
+    };
+
+    getAll = async (req: Request, res: Response) => {
+        const topping = await this.toppingService.getAll();
+        res.json({
+            data: topping,
+        });
+    };
+
+    getTopping = async (req: Request, res: Response, next: NextFunction) => {
+        const toppingId = req.params.toppingId;
+        const topping = await this.toppingService.getTopping(toppingId);
+        if (!topping) {
+            return next(createHttpError(404, "Topping not Found"));
+        }
+        res.json(topping);
+    };
+
+    delete = async (req: Request, res: Response) => {
+        const toppingId = req.params.toppingId;
+        await this.toppingService.deleteTopping(toppingId);
+        res.json({ message: "Topping deleted successfully" });
     };
 }

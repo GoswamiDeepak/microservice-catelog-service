@@ -19,4 +19,12 @@ export class ToppingService {
             { new: true },
         );
     }
+
+    async getAll() {
+        return await ToppingModel.find();
+    }
+
+    async deleteTopping(toppingId: string) {
+        return await ToppingModel.findByIdAndDelete(toppingId);
+    }
 }
