@@ -136,11 +136,20 @@ export class ToppingController {
         if (!topping) {
             return next(createHttpError(404, "Topping not Found"));
         }
-        res.json(topping);
+        const finalTopping = {
+            ...topping.toObject(),
+            image: this.storage.getObject(topping.image),
+        };
+        res.json(finalTopping);
     };
 
-    delete = async (req: Request, res: Response) => {
+    delete = async (req: Request, res: Response, next: NextFunction) => {
         const toppingId = req.params.toppingId;
+        const toppingData = await this.toppingService.getTopping(toppingId);
+        if (!toppingData) {
+            return next(createHttpError(404, "Topping is not found."));
+        }
+        await this.storage.delete(toppingData.image);
         await this.toppingService.deleteTopping(toppingId);
         res.json({ message: "Topping deleted successfully" });
     };
