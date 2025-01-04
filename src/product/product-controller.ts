@@ -36,6 +36,7 @@ export class ProductController {
         //image upload
         const image = req.files!.image as UploadedFile;
         const imageName = uuidv4();
+
         await this.storage.upload({
             fileName: imageName,
             fileData: image.data.buffer,
@@ -61,8 +62,8 @@ export class ProductController {
             tenantId,
             categoryId,
             isPublish,
-            // image : 'demo.jpg' //image
-            image: imageName,
+            image: "demo.jpg", //image
+            // image: imageName,
         };
         const newProduct = await this.productService.createProduct(
             product as unknown as Product,
@@ -145,12 +146,14 @@ export class ProductController {
 
     index = async (req: Request, res: Response) => {
         const { q, tenantId, categoryId, isPublish } = req.query;
-
         const filters: Filter = {};
 
         if (isPublish === "true") {
             filters.isPublish = true;
         }
+        // if (isPublish) {
+        //     filters.isPublish = isPublish === 'true';
+        // }
 
         if (tenantId) {
             filters.tenantId = tenantId as string;
@@ -164,7 +167,6 @@ export class ProductController {
                 categoryId as string,
             );
         }
-
         const products = await this.productService.getProducts(
             q as string,
             filters,

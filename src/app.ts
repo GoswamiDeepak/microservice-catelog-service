@@ -5,8 +5,25 @@ import categoryRouter from "./category/category-router";
 import cookieParser from "cookie-parser";
 import productRouter from "./product/product-router";
 import toppingRouter from "./topping/topping-route";
+import cors from "cors";
+import config from "config";
 
 const app = express();
+
+// const corsOptions: CorsOptions = {
+//     origin: config.get<string>("frontend.url"),
+//     credentials: true,
+// };
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call
+// app.use(cors(corsOptions));
+app.use(
+    cors({
+        origin: [config.get("frontend.url")],
+        credentials: true,
+    }),
+);
+
 app.use(express.json());
 app.use(cookieParser());
 

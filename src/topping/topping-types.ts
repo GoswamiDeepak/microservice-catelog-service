@@ -11,3 +11,7 @@ export interface Topping {
 export interface ToppingCreateRequest extends Request {
     body: Topping;
 }
+
+export interface ToppingFilter {
+    tenantId?: string;
+}

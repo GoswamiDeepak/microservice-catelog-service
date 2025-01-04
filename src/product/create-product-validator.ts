@@ -20,5 +20,5 @@ export default [
 
     body("attributes").exists().withMessage("Attributes is required"),
     body("categoryId").exists().withMessage("Category Id is required"),
-    body("isPublish").exists().withMessage("Attributes is required"),
+    // body("isPublish").exists().withMessage("Attributes is required"),
 ];

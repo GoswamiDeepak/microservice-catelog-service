@@ -39,7 +39,7 @@ router.post(
 );
 
 router.put(
-    "/productId",
+    "/:productId",
     authMiddleware,
     canAccess([Roles.ADMIN, Roles.MANAGER]),
     fileUpload({

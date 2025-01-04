@@ -1,5 +1,5 @@
 import ToppingModel from "./topping-model";
-import { Topping } from "./topping-types";
+import { Topping, ToppingFilter } from "./topping-types";
 
 export class ToppingService {
     async create(topping: Topping) {
@@ -20,8 +20,11 @@ export class ToppingService {
         );
     }
 
-    async getAll() {
-        return await ToppingModel.find({}).select("-__v").lean();
+    async getAll(filter: ToppingFilter) {
+        // eslint-disable-next-line no-console
+        console.log("filter", filter);
+        // return;
+        return await ToppingModel.find(filter).select("-__v").lean();
     }
 
     async deleteTopping(toppingId: string) {
