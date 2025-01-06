@@ -9,12 +9,14 @@ import { UploadedFile } from "express-fileupload";
 import { v4 as uuidv4 } from "uuid";
 import { AuthRequest } from "../common/types";
 import { Roles } from "../common/constants";
+import { MessageProducerBroker } from "../common/types/broker";
 
 export class ToppingController {
     constructor(
         private toppingService: ToppingService,
         private logger: Logger,
         private storage: FileStorage,
+        private broker: MessageProducerBroker,
     ) {}
     create = async (
         req: ToppingCreateRequest,
@@ -43,12 +45,19 @@ export class ToppingController {
             price,
             tenantId,
             isPublish,
-            image: "new.jpg",
-            // image: imageName
+            // image: "new.jpg",
+            image: imageName,
         };
 
         const newTopping = await this.toppingService.create(topping);
 
+        await this.broker.sendMessage(
+            "topping-topic",
+            JSON.stringify({
+                id: newTopping._id,
+                price: newTopping.price,
+            }),
+        );
         this.logger.info("Topping is created!", { id: newTopping._id });
 
         res.json({ id: newTopping._id });
@@ -113,7 +122,18 @@ export class ToppingController {
             // image: imageName
         };
 
-        await this.toppingService.updateTopping(toppingId, toppingData);
+        const updatedTopping = await this.toppingService.updateTopping(
+            toppingId,
+            toppingData,
+        );
+
+        await this.broker.sendMessage(
+            "topping-topic",
+            JSON.stringify({
+                id: updatedTopping!._id,
+                price: updatedTopping!.price,
+            }),
+        );
         this.logger.info("Topping is updated", { id: toppingId });
     };
 
