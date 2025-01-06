@@ -17,12 +17,14 @@ import { UploadedFile } from "express-fileupload";
 import { AuthRequest } from "../common/types";
 import { Roles } from "../common/constants";
 import mongoose from "mongoose";
+import { MessageProducerBroker } from "../common/types/broker";
 
 export class ProductController {
     constructor(
         private productService: ProductService,
         private logger: winston.Logger,
         private storage: FileStorage,
+        private broker: MessageProducerBroker,
     ) {
         this.create = this.create.bind(this);
     }
@@ -67,6 +69,15 @@ export class ProductController {
         };
         const newProduct = await this.productService.createProduct(
             product as unknown as Product,
+        );
+        //send product to kafka
+        //todo: move topic name to the config
+        await this.broker.sendMessage(
+            "product-topic",
+            JSON.stringify({
+                id: newProduct._id,
+                priceConfiguration: newProduct.priceConfiguration,
+            }),
         );
         this.logger.info(`New product added`, { id: newProduct._id });
         res.json({ id: newProduct._id });
@@ -140,7 +151,19 @@ export class ProductController {
             isPublish,
             image: imageName ? imageName : (oldImage as string),
         };
-        await this.productService.updateProduct(productId, product);
+        const updatedProduct = await this.productService.updateProduct(
+            productId,
+            product,
+        );
+
+        await this.broker.sendMessage(
+            "product-topic",
+            JSON.stringify({
+                id: updatedProduct._id,
+                priceConfiguration: updatedProduct.priceConfiguration,
+            }),
+        );
+        this.logger.info("product is updated", { _id: req.params.productId });
         res.json({ id: req.params.productId });
     };
 
