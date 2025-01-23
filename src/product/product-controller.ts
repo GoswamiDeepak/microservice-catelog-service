@@ -10,6 +10,7 @@ import {
     PriceConfiguration,
     Product,
     ProductCreateRequest,
+    ProductEvent,
 } from "./product-types";
 import { FileStorage } from "../common/types/storage";
 import { UploadedFile } from "express-fileupload";
@@ -17,6 +18,7 @@ import { AuthRequest } from "../common/types";
 import { Roles } from "../common/constants";
 import mongoose from "mongoose";
 import { MessageProducerBroker } from "../common/types/broker";
+import { mapToObject } from "../utils";
 
 export class ProductController {
     // Constructor to initialize the ProductController with dependencies
@@ -39,7 +41,9 @@ export class ProductController {
         }
 
         // Handle image upload
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const image = req.files!.image as UploadedFile;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const imageName = uuidv4(); // Generate a unique filename for the image
 
         // Upload the image to the storage service
@@ -79,13 +83,24 @@ export class ProductController {
             product as unknown as Product,
         );
 
+        const brokerMessage = {
+            event_type: ProductEvent.PRODUCT_CREATE,
+            data: {
+                id: newProduct._id,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                priceConfiguration: mapToObject(
+                    newProduct.priceConfiguration as unknown as Map<
+                        string,
+                        any
+                    >,
+                ),
+            },
+        };
+
         // Send a message to the broker (e.g., Kafka) with product details
         await this.broker.sendMessage(
             "product-topic", // Kafka topic name
-            JSON.stringify({
-                id: newProduct._id,
-                priceConfiguration: newProduct.priceConfiguration,
-            }),
+            JSON.stringify(brokerMessage),
         );
 
         // Log the creation of the new product
@@ -180,14 +195,23 @@ export class ProductController {
             productId,
             product,
         );
-
+        const brokerMessage = {
+            event_type: ProductEvent.PRODUCT_UPDATE,
+            data: {
+                id: updatedProduct._id,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                priceConfiguration: mapToObject(
+                    updatedProduct.priceConfiguration as unknown as Map<
+                        string,
+                        any
+                    >,
+                ),
+            },
+        };
         // Send a message to the broker with updated product details
         await this.broker.sendMessage(
             "product-topic",
-            JSON.stringify({
-                id: updatedProduct._id,
-                priceConfiguration: updatedProduct.priceConfiguration,
-            }),
+            JSON.stringify(brokerMessage),
         );
 
         // Log the update operation

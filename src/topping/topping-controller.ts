@@ -1,7 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
-import { Topping, ToppingCreateRequest, ToppingFilter } from "./topping-types";
+import {
+    Topping,
+    ToppingCreateRequest,
+    ToppingEvents,
+    ToppingFilter,
+} from "./topping-types";
 import { Logger } from "winston";
 import { ToppingService } from "./topping-servies";
 import { FileStorage } from "../common/types/storage";
@@ -51,20 +56,25 @@ export class ToppingController {
             price,
             tenantId,
             isPublish,
-            // image: "new.jpg", // Placeholder for image URL (to be replaced with actual image name)
-            image: imageName, // Use the uploaded image name
+            image: "new.jpg", // Placeholder for image URL (to be replaced with actual image name)
+            // image: imageName, // Use the uploaded image name
         };
 
         // Save the topping to the database using the topping service
         const newTopping = await this.toppingService.create(topping);
 
+        const brokerMessage = {
+            event_type: ToppingEvents.TOPPING_CREATE,
+            data: {
+                id: newTopping._id,
+                price: newTopping.price,
+                tenantId: newTopping.tenantId,
+            },
+        };
         // Send a message to the broker (e.g., Kafka) with topping details
         await this.broker.sendMessage(
             "topping-topic", // Kafka topic name
-            JSON.stringify({
-                id: newTopping._id,
-                price: newTopping.price,
-            }),
+            JSON.stringify(brokerMessage),
         );
 
         // Log the creation of the new topping
@@ -151,13 +161,19 @@ export class ToppingController {
             toppingData,
         );
 
+        const brokerMessage = {
+            event_type: ToppingEvents.TOPPING_UPDATE,
+            data: {
+                id: updatedTopping!._id,
+                price: updatedTopping!.price,
+                tenantId: updatedTopping!.tenantId,
+            },
+        };
+
         // Send a message to the broker with updated topping details
         await this.broker.sendMessage(
             "topping-topic",
-            JSON.stringify({
-                id: updatedTopping!._id,
-                price: updatedTopping!.price,
-            }),
+            JSON.stringify(brokerMessage),
         );
 
         // Log the update operation
